@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './firebase';
 import Login from './components/Auth/Login';
 import Chat from './components/Chat/Chat';
@@ -7,7 +7,7 @@ import Poll from './components/Poll/Poll';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
