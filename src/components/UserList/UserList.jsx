@@ -10,15 +10,17 @@ const UserList = ({ onUserSelect }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        console.log('Fetching users from:', `${API_URL}/users`);
         const response = await fetch(`${API_URL}/users`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        console.log('Fetched users:', data);
         setUsers(data.filter(u => u.email !== user.email));
       } catch (error) {
         console.error('Error fetching users:', error);
-        setError('Failed to fetch users. Please try again later.');
+        setError(`Failed to fetch users: ${error.message}`);
       }
     };
 
