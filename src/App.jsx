@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button"
 
 const queryClient = new QueryClient();
 
-// Create and export the AppContext
 export const AppContext = createContext({
   user: null,
   setUser: () => {},
