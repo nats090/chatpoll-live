@@ -15,7 +15,9 @@ const Chat = () => {
 
     socket.onopen = () => {
       console.log('WebSocket connected');
-      socket.send(JSON.stringify({ type: 'auth', user: user.email }));
+      if (user) {
+        socket.send(JSON.stringify({ type: 'auth', user: user.email }));
+      }
     };
 
     socket.onmessage = (event) => {
@@ -78,8 +80,8 @@ const Chat = () => {
           <div className="card-body">
             <ul className="list-group mb-3" style={{ height: '300px', overflowY: 'scroll' }}>
               {messages.map((msg, index) => (
-                <li key={index} className={`list-group-item ${msg.from === user.email ? 'text-right' : ''}`}>
-                  <strong>{msg.from === user.email ? 'You' : msg.from}:</strong> {msg.content}
+                <li key={index} className={`list-group-item ${msg.from === user?.email ? 'text-right' : ''}`}>
+                  <strong>{msg.from === user?.email ? 'You' : msg.from}:</strong> {msg.content}
                 </li>
               ))}
             </ul>
