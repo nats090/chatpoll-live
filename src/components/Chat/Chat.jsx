@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../../App';
 import UserList from '../UserList/UserList';
+import { API_URL } from '../../config';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -10,11 +11,10 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000');
+    const socket = new WebSocket(`${API_URL.replace('http', 'ws')}`);
 
     socket.onopen = () => {
       console.log('WebSocket connected');
-      // Authenticate the user
       socket.send(JSON.stringify({ type: 'auth', user: user.email }));
     };
 
@@ -54,13 +54,12 @@ const Chat = () => {
 
   const handleUserSelect = (selectedUser) => {
     setSelectedUser(selectedUser);
-    // Fetch previous messages for this user
     fetchPreviousMessages(selectedUser.email);
   };
 
   const fetchPreviousMessages = async (otherUserEmail) => {
     try {
-      const response = await fetch(`http://localhost:3000/messages?user1=${user.email}&user2=${otherUserEmail}`);
+      const response = await fetch(`${API_URL}/messages?user1=${user.email}&user2=${otherUserEmail}`);
       const data = await response.json();
       setMessages(data);
     } catch (error) {
