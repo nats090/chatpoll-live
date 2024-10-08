@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { Toaster } from "@/components/ui/sonner";
@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button"
 
 const queryClient = new QueryClient();
 
+// Create and export the AppContext
+export const AppContext = createContext({
+  user: null,
+  setUser: () => {},
+});
+
 const App = () => {
   const [user, setUser] = useState(null);
 
@@ -25,10 +31,11 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
+    <AppContext.Provider value={{ user, setUser }}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
           <div className="min-h-screen bg-gray-100">
             <nav className="bg-white shadow-sm">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,9 +83,10 @@ const App = () => {
               )}
             </main>
           </div>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AppContext.Provider>
   );
 };
 
