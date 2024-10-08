@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button } from '../ui/button';
 
 interface PollOption {
   id: number;
@@ -13,8 +12,12 @@ const Poll: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
   useEffect(() => {
+    // Fetch initial poll data
     fetchPollData();
+
+    // Set up interval to fetch updates
     const interval = setInterval(fetchPollData, 5000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -31,7 +34,7 @@ const Poll: React.FC = () => {
     if (selectedOption !== null) {
       try {
         await axios.post('http://localhost:3000/api/vote', { optionId: selectedOption });
-        fetchPollData();
+        fetchPollData(); // Refresh poll data after voting
       } catch (error) {
         console.error('Error submitting vote:', error);
       }
@@ -39,33 +42,40 @@ const Poll: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Live Poll</h2>
-      <form className="space-y-4">
+    <div className="container mt-5">
+      <h2>Live Poll</h2>
+      <form>
         {options.map((option) => (
-          <div key={option.id} className="flex items-center space-x-2">
+          <div key={option.id} className="mb-3 form-check">
             <input
               type="radio"
+              className="form-check-input"
               id={`option-${option.id}`}
               name="pollOption"
               value={option.id}
               checked={selectedOption === option.id}
               onChange={() => setSelectedOption(option.id)}
-              className="form-radio"
             />
-            <label htmlFor={`option-${option.id}`} className="flex-grow">{option.text}</label>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full" 
+            <label className="form-check-label" htmlFor={`option-${option.id}`}>
+              {option.text}
+            </label>
+            <div className="progress mt-2">
+              <div
+                className="progress-bar"
+                role="progressbar"
                 style={{ width: `${(option.votes / options.reduce((sum, opt) => sum + opt.votes, 0)) * 100}%` }}
-              ></div>
+                aria-valuenow={(option.votes / options.reduce((sum, opt) => sum + opt.votes, 0)) * 100}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                {option.votes} votes
+              </div>
             </div>
-            <span className="text-sm text-gray-500">{option.votes} votes</span>
           </div>
         ))}
-        <Button type="button" onClick={handleVote} disabled={selectedOption === null}>
+        <button type="button" className="btn btn-primary" onClick={handleVote} disabled={selectedOption === null}>
           Vote
-        </Button>
+        </button>
       </form>
     </div>
   );
