@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase';
+import { auth, db } from '../../firebase';
+import { setDoc, doc } from 'firebase/firestore';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +13,15 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Add user to Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+      });
+      
+      console.log('User registered and added to Firestore');
     } catch (error) {
       console.error('Registration error:', error);
     }

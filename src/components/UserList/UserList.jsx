@@ -5,39 +5,30 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 
 const UserList = ({ onUserSelect }) => {
   const [users, setUsers] = useState([]);
-  const [error, setError] = useState(null);
   const { user } = useContext(AppContext);
 
   useEffect(() => {
     if (user) {
       const q = query(collection(db, 'users'));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedUsers = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })).filter(u => u.email !== user.email);
+        const fetchedUsers = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(u => u.email !== user.email);
         setUsers(fetchedUsers);
-      }, (error) => {
-        console.error('Error fetching users:', error);
-        setError(`Failed to fetch users: ${error.message}`);
       });
 
       return () => unsubscribe();
     }
   }, [user]);
 
-  if (error) {
-    return <div className="alert alert-danger">{error}</div>;
-  }
-
   return (
-    <div className="card">
-      <div className="card-header">Users</div>
-      <ul className="list-group list-group-flush">
+    <div className="bg-white shadow rounded-lg p-4">
+      <h2 className="text-xl font-semibold mb-4">Users</h2>
+      <ul className="space-y-2">
         {users.map((u) => (
           <li
             key={u.id}
-            className="list-group-item cursor-pointer hover:bg-gray-100"
+            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
             onClick={() => onUserSelect(u)}
           >
             {u.email}

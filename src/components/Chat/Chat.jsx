@@ -19,10 +19,12 @@ const Chat = () => {
       );
 
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedMessages = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const fetchedMessages = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(msg => 
+            (msg.from === user.email && msg.to === selectedUser.email) ||
+            (msg.from === selectedUser.email && msg.to === user.email)
+          );
         setMessages(fetchedMessages);
       });
 
@@ -53,37 +55,39 @@ const Chat = () => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <UserList onUserSelect={handleUserSelect} />
-      <div className="col-span-2">
-        <div className="card">
-          <div className="card-header">
+    <div className="grid grid-cols-4 gap-4">
+      <div className="col-span-1">
+        <UserList onUserSelect={handleUserSelect} />
+      </div>
+      <div className="col-span-3">
+        <div className="bg-white shadow rounded-lg p-4">
+          <div className="mb-4">
             {selectedUser ? `Chat with ${selectedUser.email}` : 'Select a user to start chatting'}
           </div>
-          <div className="card-body">
-            <ul className="list-group mb-3" style={{ height: '300px', overflowY: 'scroll' }}>
-              {messages.map((msg) => (
-                <li key={msg.id} className={`list-group-item ${msg.from === user?.email ? 'text-right' : ''}`}>
-                  <strong>{msg.from === user?.email ? 'You' : msg.from}:</strong> {msg.content}
-                </li>
-              ))}
-            </ul>
-            <form onSubmit={sendMessage}>
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  disabled={!selectedUser}
-                />
-                <button className="btn btn-primary" type="submit" disabled={!selectedUser}>
-                  Send
-                </button>
+          <div className="h-96 overflow-y-auto mb-4 space-y-2">
+            {messages.map((msg) => (
+              <div key={msg.id} className={`p-2 rounded ${msg.from === user?.email ? 'bg-blue-100 ml-auto' : 'bg-gray-100'}`}>
+                <strong>{msg.from === user?.email ? 'You' : msg.from}:</strong> {msg.content}
               </div>
-            </form>
+            ))}
           </div>
+          <form onSubmit={sendMessage} className="flex">
+            <input
+              type="text"
+              className="flex-grow border rounded-l p-2"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Type a message..."
+              disabled={!selectedUser}
+            />
+            <button 
+              className="bg-blue-500 text-white px-4 py-2 rounded-r"
+              type="submit" 
+              disabled={!selectedUser}
+            >
+              Send
+            </button>
+          </form>
         </div>
       </div>
     </div>
