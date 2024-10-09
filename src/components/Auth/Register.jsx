@@ -23,7 +23,7 @@ const Register = () => {
         createdAt: new Date(),
       });
       
-      console.log('User registered and added to Firestore');
+      console.log('User registered and added to Firestore:', user.uid, user.email);
       toast.success('Registration successful!');
     } catch (error) {
       console.error('Registration error:', error);

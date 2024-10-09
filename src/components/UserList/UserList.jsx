@@ -8,19 +8,29 @@ const UserList = ({ onUserSelect }) => {
   const { user } = useContext(AppContext);
 
   useEffect(() => {
+    console.log('Current user:', user); // Log the current user
+
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      console.log('Snapshot received, doc count:', querySnapshot.size); // Log the number of documents
+
       const fetchedUsers = querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .map(doc => {
+          console.log('User doc:', doc.id, doc.data()); // Log each user document
+          return { id: doc.id, ...doc.data() };
+        })
         .filter(u => u.email !== user?.email);
+
       setUsers(fetchedUsers);
-      console.log('Fetched users:', fetchedUsers); // Debug log
+      console.log('Filtered users:', fetchedUsers); // Log the filtered users
     }, (error) => {
       console.error("Error fetching users:", error);
     });
 
     return () => unsubscribe();
   }, [user]);
+
+  console.log('Rendering UserList, users count:', users.length); // Log before rendering
 
   if (users.length === 0) {
     return (
