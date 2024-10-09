@@ -20,6 +20,7 @@ const Register = () => {
       // Add user to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
+        createdAt: new Date(),
       });
       
       console.log('User registered and added to Firestore');

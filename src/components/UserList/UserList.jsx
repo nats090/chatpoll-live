@@ -1,25 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../../App';
 import { db } from '../../config';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 
 const UserList = ({ onUserSelect }) => {
   const [users, setUsers] = useState([]);
   const { user } = useContext(AppContext);
 
   useEffect(() => {
-    if (user) {
-      const q = query(collection(db, 'users'));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedUsers = querySnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(u => u.email !== user.email);
-        setUsers(fetchedUsers);
-        console.log('Fetched users:', fetchedUsers); // Debug log
-      });
+    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedUsers = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(u => u.email !== user?.email);
+      setUsers(fetchedUsers);
+      console.log('Fetched users:', fetchedUsers); // Debug log
+    });
 
-      return () => unsubscribe();
-    }
+    return () => unsubscribe();
   }, [user]);
 
   if (users.length === 0) {
