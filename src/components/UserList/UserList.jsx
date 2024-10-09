@@ -15,6 +15,8 @@ const UserList = ({ onUserSelect }) => {
         .filter(u => u.email !== user?.email);
       setUsers(fetchedUsers);
       console.log('Fetched users:', fetchedUsers); // Debug log
+    }, (error) => {
+      console.error("Error fetching users:", error);
     });
 
     return () => unsubscribe();
