@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../../App';
-import { API_URL } from '../../config';
+import { db } from '../../config';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 
 const UserList = ({ onUserSelect }) => {
   const [users, setUsers] = useState([]);
@@ -8,33 +9,20 @@ const UserList = ({ onUserSelect }) => {
   const { user } = useContext(AppContext);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        console.log('Fetching users from:', `${API_URL}/users`);
-        const response = await fetch(`${API_URL}/users`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add any authentication headers if required
-          },
-          credentials: 'include', // Include credentials if your API requires authentication
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Fetched users:', data);
-        setUsers(data.filter(u => u.email !== user?.email));
-      } catch (error) {
+    if (user) {
+      const q = query(collection(db, 'users'));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const fetchedUsers = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })).filter(u => u.email !== user.email);
+        setUsers(fetchedUsers);
+      }, (error) => {
         console.error('Error fetching users:', error);
         setError(`Failed to fetch users: ${error.message}`);
-      }
-    };
+      });
 
-    if (user) {
-      fetchUsers();
+      return () => unsubscribe();
     }
   }, [user]);
 
@@ -48,7 +36,7 @@ const UserList = ({ onUserSelect }) => {
       <ul className="list-group list-group-flush">
         {users.map((u) => (
           <li
-            key={u.email}
+            key={u.id}
             className="list-group-item cursor-pointer hover:bg-gray-100"
             onClick={() => onUserSelect(u)}
           >

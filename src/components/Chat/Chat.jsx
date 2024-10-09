@@ -1,72 +1,55 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../../App';
 import UserList from '../UserList/UserList';
-import { API_URL } from '../../config';
+import { db } from '../../config';
+import { collection, addDoc, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const { user } = useContext(AppContext);
-  const [ws, setWs] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    const socket = new WebSocket(`${API_URL.replace('http', 'ws')}`);
+    if (user && selectedUser) {
+      const q = query(
+        collection(db, 'messages'),
+        where('participants', 'array-contains', user.email),
+        orderBy('timestamp', 'asc')
+      );
 
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-      if (user) {
-        socket.send(JSON.stringify({ type: 'auth', user: user.email }));
-      }
-    };
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const fetchedMessages = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setMessages(fetchedMessages);
+      });
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'private_message') {
-        setMessages((prevMessages) => [...prevMessages, data]);
-      }
-    };
+      return () => unsubscribe();
+    }
+  }, [user, selectedUser]);
 
-    socket.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
-
-    setWs(socket);
-
-    return () => {
-      socket.close();
-    };
-  }, [user]);
-
-  const sendMessage = (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault();
-    if (inputMessage && ws && selectedUser) {
-      const messageData = {
-        type: 'private_message',
-        from: user.email,
-        to: selectedUser.email,
-        content: inputMessage,
-        timestamp: new Date().toISOString(),
-      };
-      ws.send(JSON.stringify(messageData));
-      setMessages((prevMessages) => [...prevMessages, messageData]);
-      setInputMessage('');
+    if (inputMessage && user && selectedUser) {
+      try {
+        await addDoc(collection(db, 'messages'), {
+          content: inputMessage,
+          from: user.email,
+          to: selectedUser.email,
+          participants: [user.email, selectedUser.email],
+          timestamp: new Date()
+        });
+        setInputMessage('');
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
     }
   };
 
   const handleUserSelect = (selectedUser) => {
     setSelectedUser(selectedUser);
-    fetchPreviousMessages(selectedUser.email);
-  };
-
-  const fetchPreviousMessages = async (otherUserEmail) => {
-    try {
-      const response = await fetch(`${API_URL}/messages?user1=${user.email}&user2=${otherUserEmail}`);
-      const data = await response.json();
-      setMessages(data);
-    } catch (error) {
-      console.error('Error fetching previous messages:', error);
-    }
   };
 
   return (
@@ -79,8 +62,8 @@ const Chat = () => {
           </div>
           <div className="card-body">
             <ul className="list-group mb-3" style={{ height: '300px', overflowY: 'scroll' }}>
-              {messages.map((msg, index) => (
-                <li key={index} className={`list-group-item ${msg.from === user?.email ? 'text-right' : ''}`}>
+              {messages.map((msg) => (
+                <li key={msg.id} className={`list-group-item ${msg.from === user?.email ? 'text-right' : ''}`}>
                   <strong>{msg.from === user?.email ? 'You' : msg.from}:</strong> {msg.content}
                 </li>
               ))}
