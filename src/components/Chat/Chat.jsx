@@ -3,6 +3,8 @@ import { AppContext } from '../../App';
 import UserList from '../UserList/UserList';
 import { db } from '../../config';
 import { collection, addDoc, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -72,21 +74,21 @@ const Chat = () => {
             ))}
           </div>
           <form onSubmit={sendMessage} className="flex">
-            <input
+            <Input
               type="text"
-              className="flex-grow border rounded-l p-2"
+              className="flex-grow"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Type a message..."
               disabled={!selectedUser}
             />
-            <button 
-              className="bg-blue-500 text-white px-4 py-2 rounded-r"
+            <Button 
               type="submit" 
-              disabled={!selectedUser}
+              disabled={!selectedUser || !inputMessage.trim()}
+              className="ml-2"
             >
               Send
-            </button>
+            </Button>
           </form>
         </div>
       </div>

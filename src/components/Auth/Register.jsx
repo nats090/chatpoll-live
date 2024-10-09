@@ -5,6 +5,7 @@ import { setDoc, doc } from 'firebase/firestore';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from 'sonner'
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -22,8 +23,10 @@ const Register = () => {
       });
       
       console.log('User registered and added to Firestore');
+      toast.success('Registration successful!');
     } catch (error) {
       console.error('Registration error:', error);
+      toast.error('Registration failed: ' + error.message);
     }
   };
 

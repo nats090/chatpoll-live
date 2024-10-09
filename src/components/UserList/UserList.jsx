@@ -15,11 +15,21 @@ const UserList = ({ onUserSelect }) => {
           .map(doc => ({ id: doc.id, ...doc.data() }))
           .filter(u => u.email !== user.email);
         setUsers(fetchedUsers);
+        console.log('Fetched users:', fetchedUsers); // Debug log
       });
 
       return () => unsubscribe();
     }
   }, [user]);
+
+  if (users.length === 0) {
+    return (
+      <div className="bg-white shadow rounded-lg p-4">
+        <h2 className="text-xl font-semibold mb-4">Users</h2>
+        <p>No other users found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow rounded-lg p-4">
