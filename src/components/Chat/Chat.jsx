@@ -24,8 +24,8 @@ const Chat = () => {
         const fetchedMessages = querySnapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
           .filter(msg => 
-            (msg.from === user.email && msg.to === selectedUser.email) ||
-            (msg.from === selectedUser.email && msg.to === user.email)
+            msg.participants.includes(user.email) && 
+            msg.participants.includes(selectedUser.email)
           );
         setMessages(fetchedMessages);
       });
@@ -41,7 +41,6 @@ const Chat = () => {
         await addDoc(collection(db, 'messages'), {
           content: inputMessage,
           from: user.email,
-          to: selectedUser.email,
           participants: [user.email, selectedUser.email],
           timestamp: new Date()
         });
@@ -62,14 +61,21 @@ const Chat = () => {
         <UserList onUserSelect={handleUserSelect} />
       </div>
       <div className="col-span-3">
-        <div className="bg-white shadow rounded-lg p-4">
-          <div className="mb-4">
+        <div className="bg-white shadow rounded-lg p-4 flex flex-col h-[calc(100vh-2rem)]">
+          <div className="mb-4 font-bold text-lg">
             {selectedUser ? `Chat with ${selectedUser.email}` : 'Select a user to start chatting'}
           </div>
-          <div className="h-96 overflow-y-auto mb-4 space-y-2">
+          <div className="flex-grow overflow-y-auto mb-4 space-y-2 p-4">
             {messages.map((msg) => (
-              <div key={msg.id} className={`p-2 rounded ${msg.from === user?.email ? 'bg-blue-100 ml-auto' : 'bg-gray-100'}`}>
-                <strong>{msg.from === user?.email ? 'You' : msg.from}:</strong> {msg.content}
+              <div 
+                key={msg.id} 
+                className={`p-2 rounded-lg max-w-[70%] ${
+                  msg.from === user?.email 
+                    ? 'bg-blue-500 text-white ml-auto' 
+                    : 'bg-gray-200 text-gray-800'
+                }`}
+              >
+                {msg.content}
               </div>
             ))}
           </div>
