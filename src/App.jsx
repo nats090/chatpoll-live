@@ -9,6 +9,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Chat from './components/Chat/Chat';
 import Poll from './components/Poll/Poll';
+import UserList from './components/UserList/UserList';
 import { Button } from "@/components/ui/button"
 
 const queryClient = new QueryClient();
@@ -64,9 +65,14 @@ const App = () => {
 
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
               {user ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Chat />
-                  <Poll />
+                <div className="flex">
+                  <div className="w-1/4 mr-4">
+                    <UserList />
+                  </div>
+                  <div className="w-3/4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Chat />
+                    <Poll />
+                  </div>
                 </div>
               ) : (
                 <Routes>
