@@ -1,15 +1,18 @@
 import React, { useState, useEffect, createContext } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth, isAdmin } from './config';
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Chat from './components/Chat/Chat';
 import Poll from './components/Poll/Poll';
 import UserList from './components/UserList/UserList';
+import Dashboard from './components/Admin/Dashboard';
+import Announcement from './components/Admin/Announcement';
+import PollResult from './components/Admin/PollResult';
 import { Button } from "@/components/ui/button"
 
 const queryClient = new QueryClient();
@@ -17,21 +20,24 @@ const queryClient = new QueryClient();
 export const AppContext = createContext({
   user: null,
   setUser: () => {},
+  isAdmin: false,
 });
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [adminStatus, setAdminStatus] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setAdminStatus(isAdmin(currentUser));
     });
 
     return () => unsubscribe();
   }, []);
 
   return (
-    <AppContext.Provider value={{ user, setUser }}>
+    <AppContext.Provider value={{ user, setUser, isAdmin: adminStatus }}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
@@ -47,7 +53,22 @@ const App = () => {
                   </div>
                   <div className="flex items-center">
                     {user ? (
-                      <Button variant="outline" onClick={() => auth.signOut()}>Logout</Button>
+                      <>
+                        {adminStatus && (
+                          <>
+                            <Link to="/dashboard" className="mr-4">
+                              <Button variant="outline">Dashboard</Button>
+                            </Link>
+                            <Link to="/announcement" className="mr-4">
+                              <Button variant="outline">Announcement</Button>
+                            </Link>
+                            <Link to="/poll-result" className="mr-4">
+                              <Button variant="outline">Poll Results</Button>
+                            </Link>
+                          </>
+                        )}
+                        <Button variant="outline" onClick={() => auth.signOut()}>Logout</Button>
+                      </>
                     ) : (
                       <>
                         <Link to="/login" className="mr-4">
@@ -65,15 +86,27 @@ const App = () => {
 
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
               {user ? (
-                <div className="flex">
-                  <div className="w-1/4 mr-4">
-                    <UserList />
-                  </div>
-                  <div className="w-3/4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Chat />
-                    <Poll />
-                  </div>
-                </div>
+                <Routes>
+                  <Route path="/" element={
+                    <div className="flex">
+                      <div className="w-1/4 mr-4">
+                        <UserList />
+                      </div>
+                      <div className="w-3/4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Chat />
+                        <Poll />
+                      </div>
+                    </div>
+                  } />
+                  {adminStatus && (
+                    <>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/announcement" element={<Announcement />} />
+                      <Route path="/poll-result" element={<PollResult />} />
+                    </>
+                  )}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
               ) : (
                 <Routes>
                   <Route path="/login" element={<Login />} />
@@ -84,6 +117,7 @@ const App = () => {
                       <p className="text-xl text-gray-600">Please login or register to continue.</p>
                     </div>
                   } />
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               )}
             </main>

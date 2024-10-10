@@ -15,4 +15,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+export const isAdmin = (user) => {
+  return user && user.email === 'admin090@gmail.com';
+};
+
 console.log('Firebase initialized');
