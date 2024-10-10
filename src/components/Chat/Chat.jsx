@@ -29,7 +29,7 @@ const Chat = () => {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (inputMessage && user) {
+    if (inputMessage.trim() && user) {
       try {
         await addDoc(collection(db, 'groupMessages'), {
           content: inputMessage,

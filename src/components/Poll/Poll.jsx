@@ -4,6 +4,7 @@ import { db } from '../../config';
 import { collection, addDoc, query, onSnapshot, orderBy, updateDoc, doc } from 'firebase/firestore';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
 
 const Poll = () => {
   const [polls, setPolls] = useState([]);
@@ -50,6 +51,10 @@ const Poll = () => {
     }
   };
 
+  const calculatePercentage = (votes, total) => {
+    return total > 0 ? Math.round((votes / total) * 100) : 0;
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-4">
       <h2 className="text-xl font-semibold mb-4">Live Polls</h2>
@@ -90,17 +95,23 @@ const Poll = () => {
         <div key={poll.id} className="mb-4 p-4 border rounded">
           <h3 className="font-semibold">{poll.question}</h3>
           <p className="text-sm text-gray-500 mb-2">Created by: {poll.createdBy}</p>
-          {poll.options.map((option, index) => (
-            <div key={index} className="mb-2">
-              <Button 
-                onClick={() => vote(poll.id, index)}
-                className="w-full text-left justify-between"
-              >
-                <span>{option.text}</span>
-                <span>{option.votes} votes</span>
-              </Button>
-            </div>
-          ))}
+          {poll.options.map((option, index) => {
+            const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+            const percentage = calculatePercentage(option.votes, totalVotes);
+            return (
+              <div key={index} className="mb-2">
+                <Button 
+                  onClick={() => vote(poll.id, index)}
+                  className="w-full text-left justify-between mb-1"
+                >
+                  <span>{option.text}</span>
+                  <span>{option.votes} votes</span>
+                </Button>
+                <Progress value={percentage} className="h-2" />
+                <span className="text-sm text-gray-500">{percentage}%</span>
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>
