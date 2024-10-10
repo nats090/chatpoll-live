@@ -4,6 +4,7 @@ import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from 'sonner'
 
 const Announcement = () => {
   const [title, setTitle] = useState('');
@@ -11,29 +12,32 @@ const Announcement = () => {
   const [announcements, setAnnouncements] = useState([]);
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
-      const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      setAnnouncements(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    };
-
     fetchAnnouncements();
   }, []);
+
+  const fetchAnnouncements = async () => {
+    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    setAnnouncements(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (title && content) {
-      await addDoc(collection(db, 'announcements'), {
-        title,
-        content,
-        createdAt: new Date()
-      });
-      setTitle('');
-      setContent('');
-      // Refresh announcements
-      const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      setAnnouncements(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      try {
+        await addDoc(collection(db, 'announcements'), {
+          title,
+          content,
+          createdAt: new Date()
+        });
+        setTitle('');
+        setContent('');
+        toast.success('Announcement created successfully!');
+        fetchAnnouncements();
+      } catch (error) {
+        console.error('Error creating announcement:', error);
+        toast.error('Failed to create announcement: ' + error.message);
+      }
     }
   };
 

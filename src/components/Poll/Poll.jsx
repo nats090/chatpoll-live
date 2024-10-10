@@ -5,6 +5,7 @@ import { collection, addDoc, query, onSnapshot, orderBy, updateDoc, doc } from '
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
+import { toast } from 'sonner'
 
 const Poll = () => {
   const [polls, setPolls] = useState([]);
@@ -34,21 +35,25 @@ const Poll = () => {
         });
         setNewPollQuestion('');
         setNewPollOptions(['', '']);
+        toast.success('Poll created successfully!');
       } catch (error) {
         console.error('Error creating poll:', error);
+        toast.error('Failed to create poll: ' + error.message);
       }
     }
   };
 
   const vote = async (pollId, optionIndex) => {
-    if (!user) return; // Ensure user is logged in to vote
+    if (!user) return;
     try {
       const pollRef = doc(db, 'polls', pollId);
       await updateDoc(pollRef, {
         [`options.${optionIndex}.votes`]: polls.find(p => p.id === pollId).options[optionIndex].votes + 1
       });
+      toast.success('Vote recorded successfully!');
     } catch (error) {
       console.error('Error voting:', error);
+      toast.error('Failed to record vote: ' + error.message);
     }
   };
 
