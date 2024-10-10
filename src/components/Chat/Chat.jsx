@@ -11,26 +11,23 @@ const Chat = () => {
   const { user } = useContext(AppContext);
 
   useEffect(() => {
-    if (user) {
-      const q = query(
-        collection(db, 'groupMessages'),
-        orderBy('timestamp', 'asc')
-      );
+    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedMessages = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setMessages(fetchedMessages);
+    });
 
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setMessages(fetchedMessages);
-      });
-
-      return () => unsubscribe();
-    }
-  }, [user]);
+    return () => unsubscribe();
+  }, []);
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() && user) {
       try {
-        await addDoc(collection(db, 'groupMessages'), {
+        await addDoc(collection(db, 'messages'), {
           content: inputMessage,
           from: user.email,
           timestamp: new Date()
@@ -57,7 +54,7 @@ const Chat = () => {
                 : 'bg-gray-200 text-gray-800'
             }`}
           >
-            <div className="text-xs opacity-75 mb-1">{msg.from}</div>
+            <div className="text-xs font-bold opacity-75 mb-1">{msg.from}</div>
             {msg.content}
           </div>
         ))}
