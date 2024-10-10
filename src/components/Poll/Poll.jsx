@@ -41,6 +41,7 @@ const Poll = () => {
   };
 
   const vote = async (pollId, optionIndex) => {
+    if (!user) return; // Ensure user is logged in to vote
     try {
       const pollRef = doc(db, 'polls', pollId);
       await updateDoc(pollRef, {
@@ -91,29 +92,32 @@ const Poll = () => {
         <Button type="submit">Create Poll</Button>
       </form>
 
-      {polls.map((poll) => (
-        <div key={poll.id} className="mb-4 p-4 border rounded">
-          <h3 className="font-semibold">{poll.question}</h3>
-          <p className="text-sm text-gray-500 mb-2">Created by: {poll.createdBy}</p>
-          {poll.options.map((option, index) => {
-            const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
-            const percentage = calculatePercentage(option.votes, totalVotes);
-            return (
-              <div key={index} className="mb-2">
-                <Button 
-                  onClick={() => vote(poll.id, index)}
-                  className="w-full text-left justify-between mb-1"
-                >
-                  <span>{option.text}</span>
-                  <span>{option.votes} votes</span>
-                </Button>
-                <Progress value={percentage} className="h-2" />
-                <span className="text-sm text-gray-500">{percentage}%</span>
-              </div>
-            );
-          })}
-        </div>
-      ))}
+      <div className="space-y-4">
+        {polls.map((poll) => (
+          <div key={poll.id} className="border rounded p-4">
+            <h3 className="font-semibold mb-2">{poll.question}</h3>
+            <p className="text-sm text-gray-500 mb-2">Created by: {poll.createdBy}</p>
+            {poll.options.map((option, index) => {
+              const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+              const percentage = calculatePercentage(option.votes, totalVotes);
+              return (
+                <div key={index} className="mb-2">
+                  <Button 
+                    onClick={() => vote(poll.id, index)}
+                    className="w-full text-left justify-between mb-1"
+                    disabled={!user}
+                  >
+                    <span>{option.text}</span>
+                    <span>{option.votes} votes</span>
+                  </Button>
+                  <Progress value={percentage} className="h-2" />
+                  <span className="text-sm text-gray-500">{percentage}%</span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
