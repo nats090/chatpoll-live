@@ -82,17 +82,17 @@ const Poll = () => {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4">
-      <h2 className="text-xl font-semibold mb-4">Live Polls</h2>
+    <div className="bg-card text-card-foreground shadow-lg rounded-lg p-6 hover-effect">
+      <h2 className="text-2xl font-semibold mb-4 text-primary">Live Polls</h2>
       
       {isAdmin && (
-        <form onSubmit={createPoll} className="mb-6">
+        <form onSubmit={createPoll} className="mb-6 space-y-4">
           <Input
             type="text"
             value={newPollQuestion}
             onChange={(e) => setNewPollQuestion(e.target.value)}
             placeholder="Enter poll question"
-            className="mb-2"
+            className="bg-muted text-muted-foreground"
           />
           {newPollOptions.map((option, index) => (
             <Input
@@ -105,21 +105,21 @@ const Poll = () => {
                 setNewPollOptions(newOptions);
               }}
               placeholder={`Option ${index + 1}`}
-              className="mb-2"
+              className="bg-muted text-muted-foreground"
             />
           ))}
           <Button 
             type="button" 
             onClick={() => setNewPollOptions([...newPollOptions, ''])}
-            className="mr-2"
+            className="mr-2 bg-secondary text-secondary-foreground hover:bg-secondary/80"
           >
             Add Option
           </Button>
-          <Button type="submit">Create Poll</Button>
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/80">Create Poll</Button>
         </form>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {polls.map((poll) => {
           if (!poll || !Array.isArray(poll.options)) {
             console.error('Invalid poll data:', poll);
@@ -127,33 +127,33 @@ const Poll = () => {
           }
           const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
           return (
-            <div key={poll.id} className="border rounded p-4">
-              <h3 className="font-semibold mb-2">{poll.question}</h3>
-              <p className="text-sm text-gray-500 mb-2">Created by: {poll.createdBy}</p>
+            <div key={poll.id} className="border border-border rounded-lg p-4 hover-effect">
+              <h3 className="font-semibold mb-2 text-lg">{poll.question}</h3>
+              <p className="text-sm text-muted-foreground mb-2">Created by: {poll.createdBy}</p>
               {poll.options.map((option, index) => {
                 const percentage = calculatePercentage(option.votes || 0, totalVotes);
                 return (
-                  <div key={index} className="mb-2">
+                  <div key={index} className="mb-3">
                     <Button 
                       onClick={() => vote(poll.id, index)}
-                      className="w-full text-left justify-between mb-1"
+                      className="w-full text-left justify-between mb-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
                       disabled={!user || !poll.active}
                     >
                       <span>{option.text}</span>
                       <span>{option.votes || 0} votes</span>
                     </Button>
                     <Progress value={percentage} className="h-2" />
-                    <span className="text-sm text-gray-500">{percentage}%</span>
+                    <span className="text-sm text-muted-foreground">{percentage}%</span>
                   </div>
                 );
               })}
               {isAdmin && poll.active && (
-                <Button onClick={() => stopPoll(poll.id)} className="mt-2">
+                <Button onClick={() => stopPoll(poll.id)} className="mt-2 bg-destructive text-destructive-foreground hover:bg-destructive/80">
                   Stop Poll
                 </Button>
               )}
               {!poll.active && (
-                <p className="text-sm text-red-500 mt-2">This poll has ended.</p>
+                <p className="text-sm text-destructive mt-2">This poll has ended.</p>
               )}
             </div>
           );
