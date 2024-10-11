@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../../App';
 import { db } from '../../config';
-import { collection, addDoc, query, onSnapshot, orderBy, updateDoc, doc, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, query, onSnapshot, orderBy, updateDoc, doc, arrayUnion, increment } from 'firebase/firestore';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -56,13 +56,8 @@ const Poll = () => {
     if (!user) return;
     try {
       const pollRef = doc(db, 'polls', pollId);
-      const poll = polls.find(p => p.id === pollId);
-      if (poll.voters.includes(user.email)) {
-        toast.error('You have already voted in this poll.');
-        return;
-      }
       await updateDoc(pollRef, {
-        [`options.${optionIndex}.votes`]: poll.options[optionIndex].votes + 1,
+        [`options.${optionIndex}.votes`]: increment(1),
         voters: arrayUnion(user.email)
       });
       toast.success('Vote recorded successfully!');
@@ -144,7 +139,7 @@ const Poll = () => {
                     <Button 
                       onClick={() => vote(poll.id, index)}
                       className="w-full text-left justify-between mb-1"
-                      disabled={!user || !poll.active || poll.voters.includes(user.email)}
+                      disabled={!user || !poll.active}
                     >
                       <span>{option.text}</span>
                       <span>{option.votes || 0} votes</span>
