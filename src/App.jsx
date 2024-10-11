@@ -49,7 +49,7 @@ const App = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex justify-between h-16">
                     <div className="flex items-center">
-                      <Link to="/" className="flex-shrink-0 flex items-center text-primary font-bold text-xl">
+                      <Link to="/" className="flex-shrink-0 flex items-center text-primary font-bold text-xl link-hover">
                         Real-Time App
                       </Link>
                     </div>
@@ -57,30 +57,30 @@ const App = () => {
                       {user ? (
                         <>
                           <Link to="/poll-result" className="mr-4">
-                            <Button variant="outline" className="hover-effect">Poll Results</Button>
+                            <Button variant="outline" className="button-hover">Poll Results</Button>
                           </Link>
                           <Link to="/announcements" className="mr-4">
-                            <Button variant="outline" className="hover-effect">Announcements</Button>
+                            <Button variant="outline" className="button-hover">Announcements</Button>
                           </Link>
                           {adminStatus && (
                             <>
                               <Link to="/dashboard" className="mr-4">
-                                <Button variant="outline" className="hover-effect">Dashboard</Button>
+                                <Button variant="outline" className="button-hover">Dashboard</Button>
                               </Link>
                               <Link to="/announcement" className="mr-4">
-                                <Button variant="outline" className="hover-effect">Create Announcement</Button>
+                                <Button variant="outline" className="button-hover">Create Announcement</Button>
                               </Link>
                             </>
                           )}
-                          <Button variant="outline" className="hover-effect" onClick={() => auth.signOut()}>Logout</Button>
+                          <Button variant="outline" className="button-hover" onClick={() => auth.signOut()}>Logout</Button>
                         </>
                       ) : (
                         <>
                           <Link to="/login" className="mr-4">
-                            <Button variant="outline" className="hover-effect">Login</Button>
+                            <Button variant="outline" className="button-hover">Login</Button>
                           </Link>
                           <Link to="/register">
-                            <Button className="hover-effect">Register</Button>
+                            <Button className="button-hover">Register</Button>
                           </Link>
                         </>
                       )}
@@ -132,10 +132,10 @@ const App = () => {
 
               <footer className="footer">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center items-center space-x-4">
-                  <a href="https://www.facebook.com/nathaniel.guerra.77" target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.facebook.com/nathaniel.guerra.77" target="_blank" rel="noopener noreferrer" className="link-hover">
                     <Facebook className="social-icon" />
                   </a>
-                  <a href="https://www.instagram.com/ntnl_lg/" target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.instagram.com/ntnl_lg/" target="_blank" rel="noopener noreferrer" className="link-hover">
                     <Instagram className="social-icon" />
                   </a>
                 </div>
