@@ -64,6 +64,9 @@ const PollResult = () => {
                         <span>{option.votes || 0} votes ({percentage}%)</span>
                       </div>
                       <Progress value={percentage} className="h-2" />
+                      <p className="text-sm text-gray-600 mt-1">
+                        Option {index + 1} has received {option.votes || 0} vote{option.votes !== 1 ? 's' : ''}
+                      </p>
                     </div>
                   );
                 })}
