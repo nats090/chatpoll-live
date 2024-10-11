@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: 0 0% 0%;
-    --foreground: 60 100% 50%;
+    --foreground: 30 100% 50%;
 
     --card: 0 0% 10%;
     --card-foreground: 0 0% 100%;
@@ -13,24 +13,24 @@
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 100%;
  
-    --primary: 60 100% 50%;
+    --primary: 30 100% 50%;
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 60 30% 30%;
+    --secondary: 30 30% 30%;
     --secondary-foreground: 0 0% 100%;
  
     --muted: 0 0% 20%;
     --muted-foreground: 0 0% 80%;
  
-    --accent: 60 100% 50%;
+    --accent: 30 100% 50%;
     --accent-foreground: 0 0% 100%;
  
     --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 60 30% 30%;
-    --input: 60 30% 30%;
-    --ring: 60 100% 50%;
+    --border: 30 30% 30%;
+    --input: 30 30% 30%;
+    --ring: 30 100% 50%;
  
     --radius: 0.5rem;
   }
@@ -51,4 +51,17 @@
 
 .hover-effect:hover {
   @apply transform scale-105 shadow-lg;
+}
+
+.scrollable-content {
+  max-height: calc(100vh - 4rem - 3rem); /* Subtract header and footer height */
+  overflow-y: auto;
+}
+
+.footer {
+  @apply bg-secondary text-secondary-foreground py-4;
+}
+
+.social-icon {
+  @apply w-6 h-6 text-primary hover:text-primary-foreground transition-colors;
 }
