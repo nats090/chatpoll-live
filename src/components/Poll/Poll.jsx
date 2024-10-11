@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../../App';
 import { db } from '../../config';
-import { collection, addDoc, query, onSnapshot, orderBy, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, query, onSnapshot, orderBy, updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -16,15 +16,11 @@ const Poll = () => {
   useEffect(() => {
     const q = query(collection(db, 'polls'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const fetchedPolls = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        console.log('Fetched poll data:', data); // Log the fetched data
-        return {
-          id: doc.id,
-          ...data,
-          options: Array.isArray(data.options) ? data.options : []
-        };
-      });
+      const fetchedPolls = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        options: Array.isArray(doc.data().options) ? doc.data().options : []
+      }));
       setPolls(fetchedPolls);
     }, (error) => {
       console.error("Error fetching polls:", error);
@@ -42,7 +38,9 @@ const Poll = () => {
           question: newPollQuestion,
           options: newPollOptions.map(option => ({ text: option, votes: 0 })),
           createdBy: user.email,
-          createdAt: new Date()
+          createdAt: new Date(),
+          active: true,
+          voters: []
         });
         setNewPollQuestion('');
         setNewPollOptions(['', '']);
@@ -58,13 +56,31 @@ const Poll = () => {
     if (!user) return;
     try {
       const pollRef = doc(db, 'polls', pollId);
+      const poll = polls.find(p => p.id === pollId);
+      if (poll.voters.includes(user.email)) {
+        toast.error('You have already voted in this poll.');
+        return;
+      }
       await updateDoc(pollRef, {
-        [`options.${optionIndex}.votes`]: polls.find(p => p.id === pollId).options[optionIndex].votes + 1
+        [`options.${optionIndex}.votes`]: poll.options[optionIndex].votes + 1,
+        voters: arrayUnion(user.email)
       });
       toast.success('Vote recorded successfully!');
     } catch (error) {
       console.error('Error voting:', error);
       toast.error('Failed to record vote: ' + error.message);
+    }
+  };
+
+  const stopPoll = async (pollId) => {
+    if (!isAdmin) return;
+    try {
+      const pollRef = doc(db, 'polls', pollId);
+      await updateDoc(pollRef, { active: false });
+      toast.success('Poll stopped successfully!');
+    } catch (error) {
+      console.error('Error stopping poll:', error);
+      toast.error('Failed to stop poll: ' + error.message);
     }
   };
 
@@ -114,7 +130,7 @@ const Poll = () => {
         {polls.map((poll) => {
           if (!poll || !Array.isArray(poll.options)) {
             console.error('Invalid poll data:', poll);
-            return null; // Skip rendering this poll
+            return null;
           }
           const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
           return (
@@ -128,7 +144,7 @@ const Poll = () => {
                     <Button 
                       onClick={() => vote(poll.id, index)}
                       className="w-full text-left justify-between mb-1"
-                      disabled={!user}
+                      disabled={!user || !poll.active || poll.voters.includes(user.email)}
                     >
                       <span>{option.text}</span>
                       <span>{option.votes || 0} votes</span>
@@ -138,6 +154,14 @@ const Poll = () => {
                   </div>
                 );
               })}
+              {isAdmin && poll.active && (
+                <Button onClick={() => stopPoll(poll.id)} className="mt-2">
+                  Stop Poll
+                </Button>
+              )}
+              {!poll.active && (
+                <p className="text-sm text-red-500 mt-2">This poll has ended.</p>
+              )}
             </div>
           );
         })}

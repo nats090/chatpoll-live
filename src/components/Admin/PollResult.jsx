@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../../config';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { Progress } from "@/components/ui/progress"
@@ -14,7 +14,7 @@ const PollResult = () => {
         const querySnapshot = await getDocs(q);
         const fetchedPolls = querySnapshot.docs.map(doc => {
           const data = doc.data();
-          console.log('Fetched poll data:', data); // Log the fetched data
+          console.log('Fetched poll data:', data);
           return {
             id: doc.id,
             ...data,
@@ -42,14 +42,17 @@ const PollResult = () => {
         {polls.map((poll) => {
           if (!poll || !Array.isArray(poll.options)) {
             console.error('Invalid poll data:', poll);
-            return null; // Skip rendering this poll
+            return null;
           }
           const totalVotes = poll.options.reduce((sum, option) => sum + (option.votes || 0), 0);
           return (
             <div key={poll.id} className="border-b pb-4">
               <h3 className="text-xl font-semibold mb-2">{poll.question}</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 mb-2">
                 Created by: {poll.createdBy} on {poll.createdAt?.toDate().toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Status: {poll.active ? 'Active' : 'Ended'}
               </p>
               <div className="space-y-2">
                 {poll.options.map((option, index) => {
